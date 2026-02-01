@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Celebration 🎉</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
+</head>
+<body>
+    <!-- Background Elements -->
+    <div class="background-elements">
+        <div class="balloons-container"></div>
+        <div class="confetti-container"></div>
+        <div class="twinkling-stars"></div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <h1 class="title">
+                <span class="title-text">Happy Birthday!</span>
+                <span class="title-emoji">🎉</span>
+            </h1>
+            <p class="subtitle">
+                Another year older, another year more amazing 🎉
+            </p>
+        </header>
+
+        <!-- Cake Section -->
+        <div class="cake-container">
+            <div class="cake">
+                <!-- Cake plate -->
+                <div class="plate"></div>
+                <!-- Cake layers -->
+                <div class="layer layer-bottom"></div>
+                <div class="layer layer-middle"></div>
+                <div class="layer layer-top"></div>
+                <!-- Cake icing -->
+                <div class="icing"></div>
+                <!-- Cake candles -->
+                <div class="candles">
+                    <div class="candle">
+                        <div class="flame"></div>
+                    </div>
+                    <div class="candle">
+                        <div class="flame"></div>
+                    </div>
+                    <div class="candle">
+                        <div class="flame"></div>
+                    </div>
+                </div>
+                <!-- Cake decorations -->
+                <div class="cherry"></div>
+                <div class="cherry cherry-2"></div>
+                <div class="cherry cherry-3"></div>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <div class="input-group">
+                <label for="age-input" class="input-label">
+                    <i class="fas fa-birthday-cake"></i> How old are you celebrating?
+                </label>
+                <div class="input-wrapper">
+                    <input type="number" id="age-input" class="age-input" min="1" max="120" placeholder="Enter your age">
+                    <button id="wish-btn" class="wish-btn">
+                        <i class="fas fa-gift"></i> Get Birthday Wish
+                    </button>
+                </div>
+                <p class="input-hint">Enter your age and receive a special birthday wish!</p>
+            </div>
+        </div>
+
+        <!-- Wish Display Section -->
+        <div class="wish-section">
+            <div class="wish-container">
+                <div class="wish-header">
+                    <h2 class="wish-title">
+                        <i class="fas fa-quote-left"></i> Your Special Birthday Wish
+                    </h2>
+                </div>
+                <div class="wish-display" id="wish-display">
+                    <p class="wish-placeholder">
+                        Your personalized birthday wish will appear here...
+                    </p>
+                </div>
+                <div class="wish-actions">
+                    <button id="new-wish-btn" class="action-btn">
+                        <i class="fas fa-redo"></i> New Wish
+                    </button>
+                    <button id="share-btn" class="action-btn share-btn">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Music Player -->
+        <div class="music-player">
+            <button id="music-toggle" class="music-btn">
+                <i class="fas fa-music"></i>
+                <span class="music-text">Background Music</span>
+                <span class="music-status">(Off)</span>
+            </button>
+            <audio id="bg-music" loop>
+                <!-- In a real project, you would link to an actual music file -->
+                <!-- <source src="assets/happy-birthday.mp3" type="audio/mpeg"> -->
+                <source src="https://assets.mixkit.co/music/preview/mixkit-happy-birthday-to-you-443.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p class="footer-text">
+                Made with <i class="fas fa-heart heart"></i> for birthday celebrations everywhere
+            </p>
+            <p class="footer-subtext">
+                Refresh the page for more balloons and confetti!
+            </p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
