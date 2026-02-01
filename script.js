@@ -5,29 +5,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainContainer = document.getElementById('main-container');
     const continueBtn = document.getElementById('continue-btn');
     const envelopesGrid = document.getElementById('envelopes-grid');
-    const randomWishBtn = document.getElementById('random-wish-btn');
+    const wishDisplay = document.getElementById('wish-display');
+    const selectedWishContainer = document.getElementById('selected-wish-container');
+    const newWishBtn = document.getElementById('new-wish-btn');
+    const shareBtn = document.getElementById('share-btn');
     const resetBtn = document.getElementById('reset-btn');
     const musicToggle = document.getElementById('music-toggle');
     const bgMusic = document.getElementById('bg-music');
     const openedCount = document.getElementById('opened-count');
     const progressFill = document.getElementById('progress-fill');
-    
-    // Popup Elements
-    const wishPopup = document.getElementById('wish-popup');
-    const closePopup = document.getElementById('close-popup');
-    const popupTitle = document.getElementById('popup-title');
-    const wishNumber = document.getElementById('wish-number');
-    const popupWishText = document.getElementById('popup-wish-text');
-    const sharePopupBtn = document.getElementById('share-popup-btn');
-    const nextPopupBtn = document.getElementById('next-popup-btn');
-    
-    // Background Elements
     const balloonsContainer = document.querySelector('.balloons-container');
     const confettiContainer = document.getElementById('confetti-container');
     const twinklingStars = document.querySelector('.twinkling-stars');
     
     // State variables
-    const BIRTHDAY_AGE = 24;
+    const BIRTHDAY_AGE = 24; // Fixed age for this celebration
     let allWishes = [];
     let openedWishes = new Set();
     let currentWishIndex = null;
@@ -64,8 +56,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Continue button
         continueBtn.addEventListener('click', handleContinue);
         
-        // Random wish button
-        randomWishBtn.addEventListener('click', handleRandomWish);
+        // New wish button
+        newWishBtn.addEventListener('click', handleRandomWish);
+        
+        // Share button
+        shareBtn.addEventListener('click', handleShareWish);
         
         // Reset button
         resetBtn.addEventListener('click', handleReset);
@@ -73,35 +68,17 @@ document.addEventListener('DOMContentLoaded', function() {
         // Music toggle
         musicToggle.addEventListener('click', toggleMusic);
         
-        // Popup close button
-        closePopup.addEventListener('click', closeWishPopup);
-        
-        // Close popup when clicking outside
-        wishPopup.addEventListener('click', function(e) {
-            if (e.target === wishPopup) {
-                closeWishPopup();
-            }
-        });
-        
-        // Share popup button
-        sharePopupBtn.addEventListener('click', handleShareWish);
-        
-        // Next wish button
-        nextPopupBtn.addEventListener('click', handleNextWish);
-        
-        // Close popup with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && wishPopup.classList.contains('active')) {
-                closeWishPopup();
-            }
-        });
-        
         // Fix for music autoplay issues
         bgMusic.addEventListener('ended', function() {
             this.currentTime = 0;
             if (isMusicPlaying) {
                 this.play().catch(e => console.log('Music play error:', e));
             }
+        });
+        
+        bgMusic.addEventListener('error', function(e) {
+            console.log('Audio error:', e);
+            // Fallback to alternative source if needed
         });
         
         // Add user interaction requirement for audio
@@ -154,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Trigger entrance animation
             setTimeout(() => {
                 mainContainer.style.opacity = '1';
-                createConfetti(200);
+                createConfetti(200); // Big celebration on entry
                 playCelebrationSound();
                 
                 // Try to play music after user interaction
@@ -242,7 +219,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // If already opened, just show the wish
         if (openedWishes.has(index)) {
-            showWishPopup(index);
+            showWish(index);
             return;
         }
         
@@ -259,8 +236,8 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="envelope-label">Opened!</div>
         `;
         
-        // Show the wish in popup
-        showWishPopup(index);
+        // Show the wish
+        showWish(index);
         
         // Create confetti
         createConfetti(50);
@@ -276,13 +253,13 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 createConfetti(300);
                 playCelebrationSound();
-                showMessage("🎉 Amazing! You've opened all 24 birthday wishes! 🎉", true);
+                alert("🎉 Amazing! You've opened all 24 birthday wishes! 🎉");
             }, 500);
         }
     }
     
-    // Show wish popup
-    function showWishPopup(index) {
+    // Show wish at specific index
+    function showWish(index) {
         if (index < 0 || index >= allWishes.length) {
             index = Math.floor(Math.random() * allWishes.length);
         }
@@ -290,25 +267,23 @@ document.addEventListener('DOMContentLoaded', function() {
         currentWishIndex = index;
         const wish = allWishes[index];
         
-        // Update popup content
-        wishNumber.textContent = `Wish ${index + 1} of 24`;
-        popupWishText.textContent = wish;
+        // Create wish element
+        const wishElement = document.createElement('div');
+        wishElement.className = 'wish-text';
+        wishElement.innerHTML = `
+            <div class="wish-age">Wish ${index + 1} of 24</div>
+            <div class="wish-content">${wish}</div>
+        `;
         
-        // Show popup
-        wishPopup.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
+        // Clear and display
+        wishDisplay.innerHTML = '';
+        wishDisplay.appendChild(wishElement);
         
         // Add animation
-        popupWishText.style.animation = 'none';
+        wishElement.style.animation = 'none';
         setTimeout(() => {
-            popupWishText.style.animation = 'fadeInUp 0.5s ease';
+            wishElement.style.animation = 'fadeInUp 0.8s ease';
         }, 10);
-    }
-    
-    // Close wish popup
-    function closeWishPopup() {
-        wishPopup.classList.remove('active');
-        document.body.style.overflow = 'auto'; // Re-enable scrolling
     }
     
     // Handle random wish
@@ -320,52 +295,21 @@ document.addEventListener('DOMContentLoaded', function() {
             randomIndex = Math.floor(Math.random() * allWishes.length);
         } while (randomIndex === currentWishIndex && allWishes.length > 1);
         
-        showWishPopup(randomIndex);
+        showWish(randomIndex);
         createConfetti(30);
-    }
-    
-    // Handle next wish
-    function handleNextWish() {
-        if (allWishes.length === 0) return;
-        
-        let nextIndex = (currentWishIndex + 1) % allWishes.length;
-        
-        // If next wish hasn't been opened yet, mark it as opened
-        if (!openedWishes.has(nextIndex)) {
-            openedWishes.add(nextIndex);
-            updateEnvelopeAppearance(nextIndex);
-            updateProgress();
-        }
-        
-        showWishPopup(nextIndex);
-        createConfetti(20);
-    }
-    
-    // Update envelope appearance when opened via next button
-    function updateEnvelopeAppearance(index) {
-        const envelope = document.querySelector(`.envelope[data-index="${index}"]`);
-        if (envelope && !envelope.classList.contains('open')) {
-            envelope.classList.add('open');
-            envelope.innerHTML = `
-                <div class="envelope-icon">
-                    <i class="fas fa-envelope-open"></i>
-                </div>
-                <div class="envelope-number">${index + 1}</div>
-                <div class="envelope-label">Opened!</div>
-            `;
-        }
     }
     
     // Handle share wish
     function handleShareWish() {
-        const wish = allWishes[currentWishIndex];
+        const wishElement = document.querySelector('.wish-content');
         
-        if (!wish) {
-            showMessage('No wish to share.', false);
+        if (!wishElement) {
+            showMessage('No wish to share. Please open an envelope first!');
             return;
         }
         
-        const shareText = `Check out my ${BIRTHDAY_AGE}th birthday wish #${currentWishIndex + 1}: "${wish}" - Celebrate with me!`;
+        const wishText = wishElement.textContent;
+        const shareText = `Check out my ${BIRTHDAY_AGE}th birthday wish #${currentWishIndex + 1}: "${wishText}" - Celebrate with me!`;
         
         // Use Web Share API if available
         if (navigator.share) {
@@ -384,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(err => {
                     console.error('Failed to copy: ', err);
-                    showMessage('Failed to copy to clipboard. Please try again.', false);
+                    showMessage('Failed to copy to clipboard. Please try again.');
                 });
         }
     }
@@ -396,8 +340,14 @@ document.addEventListener('DOMContentLoaded', function() {
             generateEnvelopes();
             updateProgress();
             
-            // Close popup if open
-            closeWishPopup();
+            // Reset wish display
+            wishDisplay.innerHTML = `
+                <div class="default-message">
+                    <i class="fas fa-envelope-open-text"></i>
+                    <h3>Click an envelope to reveal a birthday wish</h3>
+                    <p>You have 24 special messages waiting for you!</p>
+                </div>
+            `;
             
             createConfetti(100);
             showMessage('All envelopes have been reset! 🎉', true);
@@ -432,7 +382,6 @@ document.addEventListener('DOMContentLoaded', function() {
             bgMusic.pause();
             musicToggle.innerHTML = '<i class="fas fa-play"></i><span class="music-text">Play Birthday Music</span>';
             musicToggle.style.background = 'linear-gradient(to right, var(--primary-color), var(--secondary-color))';
-            isMusicPlaying = false;
         } else {
             // Set volume
             bgMusic.volume = 0.5;
@@ -449,7 +398,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }).catch(error => {
                     // Autoplay prevented
                     console.log('Autoplay prevented:', error);
-                    showMessage('Click the music button again to play background music 🎵', false);
+                    showMessage('Click the music button again to play background music 🎵');
                     musicToggle.innerHTML = '<i class="fas fa-play"></i><span class="music-text">Play Birthday Music</span>';
                     isMusicPlaying = false;
                 });
