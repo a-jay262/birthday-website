@@ -5,8 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let allWishes = [];
     let openedWishes = new Set();
     let currentWishIndex = null;
-    let isMusicPlaying = false;
-    let welcomeSlideIndex = 0;
+    let isMusicPlaying = true; // Start with music playing
     
     // Get DOM elements
     const welcomeMessages = document.getElementById('welcome-messages');
@@ -14,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const continueBtn = document.getElementById('continue-btn');
     const envelopesGrid = document.getElementById('envelopes-grid');
     const randomWishBtn = document.getElementById('random-wish-btn');
-    const resetBtn = document.getElementById('reset-btn');
     const musicToggle = document.getElementById('music-toggle');
     const bgMusic = document.getElementById('bg-music');
     const openedCount = document.getElementById('opened-count');
@@ -23,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const closePopup = document.getElementById('close-popup');
     const wishNumber = document.getElementById('wish-number');
     const popupWishText = document.getElementById('popup-wish-text');
-    const sharePopupBtn = document.getElementById('share-popup-btn');
     const nextPopupBtn = document.getElementById('next-popup-btn');
     
     // Initialize the page
@@ -33,6 +30,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create background elements
         createBalloons(20);
         createStars(50);
+        
+        // Start music automatically
+        startBackgroundMusic();
         
         // Load wishes
         loadWishes();
@@ -54,9 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Random wish button
         randomWishBtn.addEventListener('click', handleRandomWish);
         
-        // Reset button
-        resetBtn.addEventListener('click', handleReset);
-        
         // Music toggle
         musicToggle.addEventListener('click', toggleMusic);
         
@@ -70,9 +67,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Share popup button
-        sharePopupBtn.addEventListener('click', handleShareWish);
-        
         // Next wish button
         nextPopupBtn.addEventListener('click', handleNextWish);
         
@@ -83,21 +77,39 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Fix for music
+        // Fix for music errors
         bgMusic.addEventListener('error', function(e) {
             console.log('Audio error:', e);
+            // Update button to show play if error occurs
+            musicToggle.innerHTML = '<i class="fas fa-play"></i><span class="music-text">Play Music</span>';
+            isMusicPlaying = false;
         });
         
-        // Mark user interaction for audio
-        document.addEventListener('click', function initAudio() {
-            bgMusic.userInteracted = true;
-            document.removeEventListener('click', initAudio);
+        bgMusic.addEventListener('ended', function() {
+            // Loop the music
+            if (isMusicPlaying) {
+                this.currentTime = 0;
+                this.play().catch(e => console.log('Music loop error:', e));
+            }
         });
+        
+        // Enable audio on first user interaction
+        document.addEventListener('click', function enableAudio() {
+            // Resume audio context if suspended
+            if (typeof AudioContext !== 'undefined') {
+                const audioContext = new AudioContext();
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            }
+            document.removeEventListener('click', enableAudio);
+        }, { once: true });
     }
     
     function setupWelcomeSlides() {
         const welcomeSlides = document.querySelectorAll('.welcome-slide');
         const dots = document.querySelectorAll('.dot');
+        let welcomeSlideIndex = 0;
         
         // Auto advance welcome slides
         setInterval(() => {
@@ -283,39 +295,6 @@ document.addEventListener('DOMContentLoaded', function() {
         createConfetti(20);
     }
     
-    function handleShareWish() {
-        const wish = allWishes[currentWishIndex];
-        
-        if (!wish) return;
-        
-        const shareText = `Check out my ${BIRTHDAY_AGE}th birthday wish #${currentWishIndex + 1}: "${wish}"`;
-        
-        // Use Web Share API if available
-        if (navigator.share) {
-            navigator.share({
-                title: `My ${BIRTHDAY_AGE}th Birthday Wish`,
-                text: shareText,
-                url: window.location.href
-            });
-        } else {
-            // Fallback: Copy to clipboard
-            navigator.clipboard.writeText(shareText)
-                .then(() => showMessage('Wish copied to clipboard! 📋'))
-                .catch(() => showMessage('Failed to copy to clipboard.'));
-        }
-    }
-    
-    function handleReset() {
-        if (confirm("Are you sure you want to reset all envelopes?")) {
-            openedWishes.clear();
-            generateEnvelopes();
-            updateProgress();
-            closeWishPopup();
-            createConfetti(100);
-            showMessage('All envelopes have been reset! 🎉');
-        }
-    }
-    
     function updateProgress() {
         const opened = openedWishes.size;
         const progress = (opened / 24) * 100;
@@ -333,26 +312,48 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function toggleMusic() {
-        if (!bgMusic.userInteracted) {
-            showMessage('Click the music button again to play 🎵');
-            bgMusic.userInteracted = true;
-            return;
-        }
+    // Function to start background music automatically
+    function startBackgroundMusic() {
+        // Set volume to a pleasant level
+        bgMusic.volume = 0.4;
         
+        // Try to play with promise
+        const playPromise = bgMusic.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                // Successfully started playing
+                isMusicPlaying = true;
+                musicToggle.innerHTML = '<i class="fas fa-pause"></i><span class="music-text">Pause Music</span>';
+                console.log('Background music started automatically');
+            }).catch(error => {
+                // Autoplay was prevented
+                console.log('Autoplay prevented:', error);
+                // Update button to show play instead of pause
+                musicToggle.innerHTML = '<i class="fas fa-play"></i><span class="music-text">Play Music</span>';
+                isMusicPlaying = false;
+            });
+        }
+    }
+    
+    // Toggle music play/pause
+    function toggleMusic() {
         if (isMusicPlaying) {
+            // Pause the music
             bgMusic.pause();
-            musicToggle.innerHTML = '<i class="fas fa-play"></i><span class="music-text">Play Birthday Music</span>';
+            musicToggle.innerHTML = '<i class="fas fa-play"></i><span class="music-text">Play Music</span>';
             isMusicPlaying = false;
         } else {
-            bgMusic.volume = 0.5;
+            // Play the music
+            bgMusic.volume = 0.4;
             bgMusic.play()
                 .then(() => {
                     musicToggle.innerHTML = '<i class="fas fa-pause"></i><span class="music-text">Pause Music</span>';
                     isMusicPlaying = true;
                 })
-                .catch(() => {
-                    showMessage('Click the music button again to play 🎵');
+                .catch(error => {
+                    console.log('Error playing music:', error);
+                    musicToggle.innerHTML = '<i class="fas fa-play"></i><span class="music-text">Play Music</span>';
                 });
         }
     }
