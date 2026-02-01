@@ -1,32 +1,30 @@
 // Main application for 24th Birthday
 document.addEventListener('DOMContentLoaded', function() {
-    // DOM Elements
-    const welcomeMessages = document.getElementById('welcome-messages');
-    const mainContainer = document.getElementById('main-container');
-    const continueBtn = document.getElementById('continue-btn');
-    const envelopesGrid = document.getElementById('envelopes-grid');
-    const wishDisplay = document.getElementById('wish-display');
-    const selectedWishContainer = document.getElementById('selected-wish-container');
-    const newWishBtn = document.getElementById('new-wish-btn');
-    const shareBtn = document.getElementById('share-btn');
-    const resetBtn = document.getElementById('reset-btn');
-    const musicToggle = document.getElementById('music-toggle');
-    const bgMusic = document.getElementById('bg-music');
-    const openedCount = document.getElementById('opened-count');
-    const progressFill = document.getElementById('progress-fill');
-    const balloonsContainer = document.querySelector('.balloons-container');
-    const confettiContainer = document.getElementById('confetti-container');
-    const twinklingStars = document.querySelector('.twinkling-stars');
-    
     // State variables
-    const BIRTHDAY_AGE = 24; // Fixed age for this celebration
+    const BIRTHDAY_AGE = 24;
     let allWishes = [];
     let openedWishes = new Set();
     let currentWishIndex = null;
     let isMusicPlaying = false;
     let welcomeSlideIndex = 0;
-    let welcomeSlides = document.querySelectorAll('.welcome-slide');
-    let dots = document.querySelectorAll('.dot');
+    
+    // Get DOM elements
+    const welcomeMessages = document.getElementById('welcome-messages');
+    const mainContainer = document.getElementById('main-container');
+    const continueBtn = document.getElementById('continue-btn');
+    const envelopesGrid = document.getElementById('envelopes-grid');
+    const randomWishBtn = document.getElementById('random-wish-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const musicToggle = document.getElementById('music-toggle');
+    const bgMusic = document.getElementById('bg-music');
+    const openedCount = document.getElementById('opened-count');
+    const progressFill = document.getElementById('progress-fill');
+    const wishPopup = document.getElementById('wish-popup');
+    const closePopup = document.getElementById('close-popup');
+    const wishNumber = document.getElementById('wish-number');
+    const popupWishText = document.getElementById('popup-wish-text');
+    const sharePopupBtn = document.getElementById('share-popup-btn');
+    const nextPopupBtn = document.getElementById('next-popup-btn');
     
     // Initialize the page
     init();
@@ -36,31 +34,25 @@ document.addEventListener('DOMContentLoaded', function() {
         createBalloons(20);
         createStars(50);
         
-        // Set up event listeners
-        setupEventListeners();
-        
-        // Set up welcome slides
-        setupWelcomeSlides();
-        
-        // Load wishes from JSON file
+        // Load wishes
         loadWishes();
         
         // Generate envelopes
         generateEnvelopes();
         
-        // Update progress
-        updateProgress();
+        // Set up event listeners
+        setupEventListeners();
+        
+        // Set up welcome slides
+        setupWelcomeSlides();
     }
     
     function setupEventListeners() {
         // Continue button
         continueBtn.addEventListener('click', handleContinue);
         
-        // New wish button
-        newWishBtn.addEventListener('click', handleRandomWish);
-        
-        // Share button
-        shareBtn.addEventListener('click', handleShareWish);
+        // Random wish button
+        randomWishBtn.addEventListener('click', handleRandomWish);
         
         // Reset button
         resetBtn.addEventListener('click', handleReset);
@@ -68,28 +60,45 @@ document.addEventListener('DOMContentLoaded', function() {
         // Music toggle
         musicToggle.addEventListener('click', toggleMusic);
         
-        // Fix for music autoplay issues
-        bgMusic.addEventListener('ended', function() {
-            this.currentTime = 0;
-            if (isMusicPlaying) {
-                this.play().catch(e => console.log('Music play error:', e));
+        // Popup close button
+        closePopup.addEventListener('click', closeWishPopup);
+        
+        // Close popup when clicking outside
+        wishPopup.addEventListener('click', function(e) {
+            if (e.target === wishPopup) {
+                closeWishPopup();
             }
         });
         
+        // Share popup button
+        sharePopupBtn.addEventListener('click', handleShareWish);
+        
+        // Next wish button
+        nextPopupBtn.addEventListener('click', handleNextWish);
+        
+        // Close popup with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && wishPopup.classList.contains('active')) {
+                closeWishPopup();
+            }
+        });
+        
+        // Fix for music
         bgMusic.addEventListener('error', function(e) {
             console.log('Audio error:', e);
-            // Fallback to alternative source if needed
         });
         
-        // Add user interaction requirement for audio
-        document.addEventListener('click', function() {
-            if (!bgMusic.userInteracted) {
-                bgMusic.userInteracted = true;
-            }
-        }, { once: true });
+        // Mark user interaction for audio
+        document.addEventListener('click', function initAudio() {
+            bgMusic.userInteracted = true;
+            document.removeEventListener('click', initAudio);
+        });
     }
     
     function setupWelcomeSlides() {
+        const welcomeSlides = document.querySelectorAll('.welcome-slide');
+        const dots = document.querySelectorAll('.dot');
+        
         // Auto advance welcome slides
         setInterval(() => {
             if (welcomeMessages.style.display !== 'none') {
@@ -103,24 +112,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 showWelcomeSlide(index);
             });
         });
-    }
-    
-    function nextWelcomeSlide() {
-        welcomeSlideIndex = (welcomeSlideIndex + 1) % welcomeSlides.length;
-        showWelcomeSlide(welcomeSlideIndex);
-    }
-    
-    function showWelcomeSlide(index) {
-        welcomeSlides.forEach(slide => slide.classList.remove('active'));
-        dots.forEach(dot => dot.classList.remove('active'));
         
-        welcomeSlides[index].classList.add('active');
-        dots[index].classList.add('active');
-        welcomeSlideIndex = index;
+        function nextWelcomeSlide() {
+            welcomeSlideIndex = (welcomeSlideIndex + 1) % welcomeSlides.length;
+            showWelcomeSlide(welcomeSlideIndex);
+        }
+        
+        function showWelcomeSlide(index) {
+            welcomeSlides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            welcomeSlides[index].classList.add('active');
+            dots[index].classList.add('active');
+            welcomeSlideIndex = index;
+        }
     }
     
     function handleContinue() {
-        // Hide welcome messages with fade out
+        // Hide welcome messages
         welcomeMessages.style.opacity = '0';
         welcomeMessages.style.transition = 'opacity 0.5s ease';
         
@@ -128,70 +137,38 @@ document.addEventListener('DOMContentLoaded', function() {
             welcomeMessages.style.display = 'none';
             mainContainer.style.display = 'block';
             
-            // Trigger entrance animation
+            // Show main content
             setTimeout(() => {
                 mainContainer.style.opacity = '1';
-                createConfetti(200); // Big celebration on entry
+                createConfetti(200);
                 playCelebrationSound();
-                
-                // Try to play music after user interaction
-                setTimeout(() => {
-                    if (!isMusicPlaying) {
-                        toggleMusic();
-                    }
-                }, 1000);
             }, 100);
         }, 500);
     }
     
-    // Load wishes from JSON file
     async function loadWishes() {
         try {
             const response = await fetch('wishes.json');
             const wishesData = await response.json();
             
-            // Get wishes for age 24 or default
+            // Get wishes for age 24
             if (wishesData[BIRTHDAY_AGE]) {
                 allWishes = wishesData[BIRTHDAY_AGE];
             } else {
-                allWishes = wishesData.default;
+                // Fallback wishes
+                allWishes = Array.from({length: 24}, (_, i) => 
+                    `Birthday wish ${i + 1} for your 24th birthday! 🎉`
+                );
             }
-            
-            console.log(`Loaded ${allWishes.length} wishes for ${BIRTHDAY_AGE}th birthday`);
-            
         } catch (error) {
             console.error('Error loading wishes:', error);
             // Fallback to default wishes
-            allWishes = [
-                "Happy 24th Birthday! Your journey is just getting started.",
-                "24 looks amazing on you! Wishing you a year filled with joy.",
-                "Cheers to 24 years of being incredible!",
-                "May your 24th year be your best one yet!",
-                "24 candles, 24 wishes, all for you!",
-                "Welcome to 24 - it's going to be amazing!",
-                "Another year wiser, another year more wonderful!",
-                "24 is just the beginning of your greatest adventures!",
-                "Happy Birthday to someone who gets better every year!",
-                "24 years of making the world brighter!",
-                "May all your birthday wishes come true!",
-                "Here's to 24 more years of happiness!",
-                "You're not getting older, you're getting better!",
-                "24 and thriving! Keep shining bright!",
-                "Wishing you 24 times the happiness today!",
-                "Happy Birthday to an amazing 24-year-old!",
-                "May your 24th year be filled with blessings!",
-                "Cheers to you on your special day!",
-                "24 looks perfect on you!",
-                "Another year, another reason to celebrate you!",
-                "May your birthday be as special as you are!",
-                "24 years of wonderful you!",
-                "Here's to making more amazing memories!",
-                "Happy Birthday! Today is all about you!"
-            ];
+            allWishes = Array.from({length: 24}, (_, i) => 
+                `Happy 24th Birthday! This is wish number ${i + 1} of 24. 🎂`
+            );
         }
     }
     
-    // Generate 24 envelopes
     function generateEnvelopes() {
         envelopesGrid.innerHTML = '';
         
@@ -213,80 +190,61 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Handle envelope click
     function handleEnvelopeClick(index) {
         const envelope = document.querySelector(`.envelope[data-index="${index}"]`);
         
-        // If already opened, just show the wish
-        if (openedWishes.has(index)) {
-            showWish(index);
-            return;
+        // Mark as opened if not already
+        if (!openedWishes.has(index)) {
+            openedWishes.add(index);
+            envelope.classList.add('open');
+            envelope.innerHTML = `
+                <div class="envelope-icon">
+                    <i class="fas fa-envelope-open"></i>
+                </div>
+                <div class="envelope-number">${index + 1}</div>
+                <div class="envelope-label">Opened!</div>
+            `;
+            
+            updateProgress();
+            
+            // Celebrate if all envelopes are opened
+            if (openedWishes.size === 24) {
+                setTimeout(() => {
+                    createConfetti(300);
+                    playCelebrationSound();
+                    showMessage("🎉 Amazing! You've opened all 24 birthday wishes! 🎉");
+                }, 500);
+            }
         }
-        
-        // Mark as opened
-        openedWishes.add(index);
-        
-        // Update envelope appearance
-        envelope.classList.add('open');
-        envelope.innerHTML = `
-            <div class="envelope-icon">
-                <i class="fas fa-envelope-open"></i>
-            </div>
-            <div class="envelope-number">${index + 1}</div>
-            <div class="envelope-label">Opened!</div>
-        `;
         
         // Show the wish
-        showWish(index);
-        
-        // Create confetti
+        showWishPopup(index);
         createConfetti(50);
-        
-        // Play sound
         playEnvelopeSound();
-        
-        // Update progress
-        updateProgress();
-        
-        // Celebrate if all envelopes are opened
-        if (openedWishes.size === 24) {
-            setTimeout(() => {
-                createConfetti(300);
-                playCelebrationSound();
-                alert("🎉 Amazing! You've opened all 24 birthday wishes! 🎉");
-            }, 500);
-        }
     }
     
-    // Show wish at specific index
-    function showWish(index) {
+    function showWishPopup(index) {
         if (index < 0 || index >= allWishes.length) {
-            index = Math.floor(Math.random() * allWishes.length);
+            index = 0;
         }
         
         currentWishIndex = index;
         const wish = allWishes[index];
         
-        // Create wish element
-        const wishElement = document.createElement('div');
-        wishElement.className = 'wish-text';
-        wishElement.innerHTML = `
-            <div class="wish-age">Wish ${index + 1} of 24</div>
-            <div class="wish-content">${wish}</div>
-        `;
+        // Update popup content
+        wishNumber.textContent = `Wish ${index + 1} of 24`;
+        popupWishText.textContent = wish;
         
-        // Clear and display
-        wishDisplay.innerHTML = '';
-        wishDisplay.appendChild(wishElement);
-        
-        // Add animation
-        wishElement.style.animation = 'none';
-        setTimeout(() => {
-            wishElement.style.animation = 'fadeInUp 0.8s ease';
-        }, 10);
+        // Show popup
+        wishPopup.classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
     
-    // Handle random wish
+    function closeWishPopup() {
+        wishPopup.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+    
     function handleRandomWish() {
         if (allWishes.length === 0) return;
         
@@ -295,21 +253,42 @@ document.addEventListener('DOMContentLoaded', function() {
             randomIndex = Math.floor(Math.random() * allWishes.length);
         } while (randomIndex === currentWishIndex && allWishes.length > 1);
         
-        showWish(randomIndex);
+        showWishPopup(randomIndex);
         createConfetti(30);
     }
     
-    // Handle share wish
-    function handleShareWish() {
-        const wishElement = document.querySelector('.wish-content');
+    function handleNextWish() {
+        if (allWishes.length === 0) return;
         
-        if (!wishElement) {
-            showMessage('No wish to share. Please open an envelope first!');
-            return;
+        let nextIndex = (currentWishIndex + 1) % allWishes.length;
+        
+        // If next wish hasn't been opened yet, mark it as opened
+        if (!openedWishes.has(nextIndex)) {
+            openedWishes.add(nextIndex);
+            const envelope = document.querySelector(`.envelope[data-index="${nextIndex}"]`);
+            if (envelope) {
+                envelope.classList.add('open');
+                envelope.innerHTML = `
+                    <div class="envelope-icon">
+                        <i class="fas fa-envelope-open"></i>
+                    </div>
+                    <div class="envelope-number">${nextIndex + 1}</div>
+                    <div class="envelope-label">Opened!</div>
+                `;
+            }
+            updateProgress();
         }
         
-        const wishText = wishElement.textContent;
-        const shareText = `Check out my ${BIRTHDAY_AGE}th birthday wish #${currentWishIndex + 1}: "${wishText}" - Celebrate with me!`;
+        showWishPopup(nextIndex);
+        createConfetti(20);
+    }
+    
+    function handleShareWish() {
+        const wish = allWishes[currentWishIndex];
+        
+        if (!wish) return;
+        
+        const shareText = `Check out my ${BIRTHDAY_AGE}th birthday wish #${currentWishIndex + 1}: "${wish}"`;
         
         // Use Web Share API if available
         if (navigator.share) {
@@ -317,44 +296,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 title: `My ${BIRTHDAY_AGE}th Birthday Wish`,
                 text: shareText,
                 url: window.location.href
-            })
-            .then(() => console.log('Share successful'))
-            .catch(error => console.log('Error sharing:', error));
+            });
         } else {
             // Fallback: Copy to clipboard
             navigator.clipboard.writeText(shareText)
-                .then(() => {
-                    showMessage('Wish copied to clipboard! 📋', true);
-                })
-                .catch(err => {
-                    console.error('Failed to copy: ', err);
-                    showMessage('Failed to copy to clipboard. Please try again.');
-                });
+                .then(() => showMessage('Wish copied to clipboard! 📋'))
+                .catch(() => showMessage('Failed to copy to clipboard.'));
         }
     }
     
-    // Handle reset
     function handleReset() {
-        if (confirm("Are you sure you want to reset all envelopes? This will close all opened wishes.")) {
+        if (confirm("Are you sure you want to reset all envelopes?")) {
             openedWishes.clear();
             generateEnvelopes();
             updateProgress();
-            
-            // Reset wish display
-            wishDisplay.innerHTML = `
-                <div class="default-message">
-                    <i class="fas fa-envelope-open-text"></i>
-                    <h3>Click an envelope to reveal a birthday wish</h3>
-                    <p>You have 24 special messages waiting for you!</p>
-                </div>
-            `;
-            
+            closeWishPopup();
             createConfetti(100);
-            showMessage('All envelopes have been reset! 🎉', true);
+            showMessage('All envelopes have been reset! 🎉');
         }
     }
     
-    // Update progress
     function updateProgress() {
         const opened = openedWishes.size;
         const progress = (opened / 24) * 100;
@@ -372,46 +333,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Toggle background music
     function toggleMusic() {
         if (!bgMusic.userInteracted) {
+            showMessage('Click the music button again to play 🎵');
             bgMusic.userInteracted = true;
+            return;
         }
         
         if (isMusicPlaying) {
             bgMusic.pause();
             musicToggle.innerHTML = '<i class="fas fa-play"></i><span class="music-text">Play Birthday Music</span>';
-            musicToggle.style.background = 'linear-gradient(to right, var(--primary-color), var(--secondary-color))';
+            isMusicPlaying = false;
         } else {
-            // Set volume
             bgMusic.volume = 0.5;
-            
-            // Play with promise to handle autoplay restrictions
-            const playPromise = bgMusic.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    // Music started successfully
+            bgMusic.play()
+                .then(() => {
                     musicToggle.innerHTML = '<i class="fas fa-pause"></i><span class="music-text">Pause Music</span>';
-                    musicToggle.style.background = 'linear-gradient(to right, #06d6a0, #0cb48c)';
                     isMusicPlaying = true;
-                }).catch(error => {
-                    // Autoplay prevented
-                    console.log('Autoplay prevented:', error);
-                    showMessage('Click the music button again to play background music 🎵');
-                    musicToggle.innerHTML = '<i class="fas fa-play"></i><span class="music-text">Play Birthday Music</span>';
-                    isMusicPlaying = false;
+                })
+                .catch(() => {
+                    showMessage('Click the music button again to play 🎵');
                 });
-            }
         }
     }
     
-    // Create floating balloons
+    // Background elements functions
     function createBalloons(count) {
-        const balloonColors = [
-            '#ff6b8b', '#6a5af9', '#4facfe', '#00f2fe', '#06d6a0',
-            '#ffd166', '#ff9a00', '#c779d0', '#feac5e', '#a8edea'
-        ];
+        const balloonColors = ['#ff6b8b', '#6a5af9', '#4facfe', '#00f2fe', '#06d6a0', '#ffd166'];
+        const container = document.querySelector('.balloons-container');
         
         for (let i = 0; i < count; i++) {
             const balloon = document.createElement('div');
@@ -422,83 +371,60 @@ document.addEventListener('DOMContentLoaded', function() {
             const left = Math.random() * 100;
             const duration = Math.random() * 20 + 20;
             const delay = Math.random() * 15;
-            const rotation = Math.random() * 30 - 15;
             
             balloon.style.width = `${size}px`;
             balloon.style.height = `${size * 1.2}px`;
-            balloon.style.background = `radial-gradient(circle at 30% 30%, ${color}, ${darkenColor(color, 20)})`;
+            balloon.style.background = color;
             balloon.style.left = `${left}%`;
-            balloon.style.setProperty('--rotation', `${rotation}deg`);
             balloon.style.animationDuration = `${duration}s`;
             balloon.style.animationDelay = `${delay}s`;
             
-            const string = document.createElement('div');
-            string.className = 'balloon-string';
-            
-            balloon.appendChild(string);
-            balloonsContainer.appendChild(balloon);
+            container.appendChild(balloon);
         }
     }
     
-    // Create twinkling stars
     function createStars(count) {
+        const container = document.querySelector('.twinkling-stars');
+        
         for (let i = 0; i < count; i++) {
             const star = document.createElement('div');
             star.className = 'star';
             
-            const top = Math.random() * 100;
-            const left = Math.random() * 100;
-            const delay = Math.random() * 5;
-            const duration = Math.random() * 3 + 2;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.animationDelay = `${Math.random() * 5}s`;
             
-            star.style.top = `${top}%`;
-            star.style.left = `${left}%`;
-            star.style.animationDelay = `${delay}s`;
-            star.style.animationDuration = `${duration}s`;
-            
-            twinklingStars.appendChild(star);
+            container.appendChild(star);
         }
     }
     
-    // Create confetti animation
     function createConfetti(count = 150) {
-        const confettiColors = [
-            '#ff6b8b', '#6a5af9', '#4facfe', '#00f2fe', '#06d6a0',
-            '#ffd166', '#ff9a00', '#c779d0', '#feac5e', '#a8edea'
-        ];
+        const container = document.querySelector('.confetti-container');
+        const colors = ['#ff6b8b', '#6a5af9', '#4facfe', '#00f2fe', '#06d6a0', '#ffd166'];
         
         for (let i = 0; i < count; i++) {
             const confetti = document.createElement('div');
             confetti.className = 'confetti';
             
-            const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
-            const left = Math.random() * 100;
-            const size = Math.random() * 10 + 5;
-            const duration = Math.random() * 3 + 2;
-            const delay = Math.random() * 2;
-            const rotation = Math.random() * 360;
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.left = `${Math.random() * 100}%`;
+            confetti.style.width = `${Math.random() * 10 + 5}px`;
+            confetti.style.height = `${Math.random() * 10 + 5}px`;
+            confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
+            confetti.style.animationDelay = `${Math.random() * 2}s`;
             
-            confetti.style.background = color;
-            confetti.style.left = `${left}%`;
-            confetti.style.width = `${size}px`;
-            confetti.style.height = `${size}px`;
-            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
-            confetti.style.animationDuration = `${duration}s`;
-            confetti.style.animationDelay = `${delay}s`;
-            confetti.style.transform = `rotate(${rotation}deg)`;
-            
-            confettiContainer.appendChild(confetti);
+            container.appendChild(confetti);
             
             setTimeout(() => {
-                if (confetti.parentNode === confettiContainer) {
-                    confettiContainer.removeChild(confetti);
+                if (confetti.parentNode === container) {
+                    container.removeChild(confetti);
                 }
-            }, (duration + delay) * 1000);
+            }, 5000);
         }
     }
     
-    // Play celebration sound
     function playCelebrationSound() {
+        // Simple celebration sound using beep
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
@@ -509,18 +435,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             oscillator.frequency.value = 523.25;
             oscillator.type = 'sine';
+            gainNode.gain.value = 0.3;
             
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
+            oscillator.start();
+            setTimeout(() => oscillator.stop(), 300);
         } catch (e) {
-            console.log('Web Audio API not supported');
+            // Audio context not supported
         }
     }
     
-    // Play envelope opening sound
     function playEnvelopeSound() {
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -530,93 +453,54 @@ document.addEventListener('DOMContentLoaded', function() {
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            oscillator.frequency.value = 659.25; // E5
+            oscillator.frequency.value = 659.25;
             oscillator.type = 'triangle';
+            gainNode.gain.value = 0.2;
             
-            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.3);
+            oscillator.start();
+            setTimeout(() => oscillator.stop(), 200);
         } catch (e) {
-            console.log('Web Audio API not supported');
+            // Audio context not supported
         }
     }
     
-    // Show message
-    function showMessage(message, isSuccess = false) {
-        // Create message element
+    function showMessage(message) {
         const messageEl = document.createElement('div');
-        messageEl.className = 'message-popup';
         messageEl.textContent = message;
         messageEl.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
-            background: ${isSuccess ? '#06d6a0' : '#ff6b8b'};
+            background: #06d6a0;
             color: white;
             padding: 15px 25px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             z-index: 1000;
-            animation: slideInRight 0.3s ease;
+            animation: slideIn 0.3s ease;
         `;
+        
+        // Add animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
         
         document.body.appendChild(messageEl);
         
         setTimeout(() => {
-            messageEl.style.animation = 'slideOutRight 0.3s ease';
+            messageEl.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => {
                 document.body.removeChild(messageEl);
             }, 300);
         }, 3000);
     }
-    
-    // Helper function to darken a color
-    function darkenColor(color, percent) {
-        const num = parseInt(color.replace('#', ''), 16);
-        const amt = Math.round(2.55 * percent);
-        const R = (num >> 16) - amt;
-        const G = (num >> 8 & 0x00FF) - amt;
-        const B = (num & 0x0000FF) - amt;
-        
-        return '#' + (
-            0x1000000 +
-            (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255)
-        ).toString(16).slice(1);
-    }
-    
-    // Add custom animations
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-        
-        .message-popup {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-    `;
-    document.head.appendChild(style);
 });

@@ -12,13 +12,6 @@
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
 </head>
 <body>
-    <!-- Background Elements -->
-    <div class="background-elements">
-        <div class="balloons-container"></div>
-        <div class="confetti-container"></div>
-        <div class="twinkling-stars"></div>
-    </div>
-
     <!-- Welcome Messages -->
     <div class="welcome-messages" id="welcome-messages">
         <div class="welcome-slide active">
@@ -50,6 +43,13 @@
 
     <!-- Main Content Container (Initially Hidden) -->
     <div class="container" id="main-container" style="display: none;">
+        <!-- Background Elements -->
+        <div class="background-elements">
+            <div class="balloons-container"></div>
+            <div class="confetti-container"></div>
+            <div class="twinkling-stars"></div>
+        </div>
+
         <!-- Header Section -->
         <header class="header">
             <h1 class="title">
@@ -57,7 +57,7 @@
                 <span class="title-emoji">🎂</span>
             </h1>
             <p class="subtitle">
-                24 years of incredible you! Each wish is a celebration of who you are.
+                24 years of incredible you! Click each envelope to reveal a special birthday wish.
             </p>
             <div class="age-badge">24</div>
         </header>
@@ -71,7 +71,6 @@
                 <div class="layer layer-top"></div>
                 <div class="icing"></div>
                 <div class="candles">
-                    <!-- 2 candles for 24 -->
                     <div class="candle">
                         <div class="flame"></div>
                     </div>
@@ -103,31 +102,7 @@
             </div>
         </div>
 
-        <!-- Selected Wish Display -->
-        <div class="selected-wish-section">
-            <div class="selected-wish-container" id="selected-wish-container">
-                <div class="wish-display" id="wish-display">
-                    <div class="default-message">
-                        <i class="fas fa-envelope-open-text"></i>
-                        <h3>Click an envelope to reveal a birthday wish</h3>
-                        <p>You have 24 special messages waiting for you!</p>
-                    </div>
-                </div>
-                <div class="wish-actions">
-                    <button id="new-wish-btn" class="action-btn">
-                        <i class="fas fa-random"></i> Random Wish
-                    </button>
-                    <button id="share-btn" class="action-btn share-btn">
-                        <i class="fas fa-share-alt"></i> Share This Wish
-                    </button>
-                    <button id="reset-btn" class="action-btn reset-btn">
-                        <i class="fas fa-redo"></i> Reset All
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Progress Counter -->
+        <!-- Progress Section -->
         <div class="progress-section">
             <div class="progress-container">
                 <h3>Wishes Opened</h3>
@@ -140,6 +115,16 @@
             </div>
         </div>
 
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button id="random-wish-btn" class="action-btn random-btn">
+                <i class="fas fa-random"></i> Open Random Wish
+            </button>
+            <button id="reset-btn" class="action-btn reset-btn">
+                <i class="fas fa-redo"></i> Reset All Envelopes
+            </button>
+        </div>
+
         <!-- Music Player -->
         <div class="music-player">
             <button id="music-toggle" class="music-btn">
@@ -147,8 +132,7 @@
                 <span class="music-text">Play Birthday Music</span>
             </button>
             <audio id="bg-music" loop preload="auto">
-                <!-- Using a reliable music source -->
-                <source src="https://assets.mixkit.co/music/preview/mixkit-happy-birthday-to-you-443.mp3" type="audio/mpeg">
+                <source src="./assets/happy-birthday.mp3" type="audio/mpeg">
                 Your browser does not support the audio element.
             </audio>
         </div>
@@ -164,8 +148,31 @@
         </footer>
     </div>
 
-    <!-- Confetti Container -->
-    <div class="confetti-container" id="confetti-container"></div>
+    <!-- Wish Popup Modal -->
+    <div class="wish-popup" id="wish-popup">
+        <div class="popup-content">
+            <button class="close-popup" id="close-popup">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="popup-header">
+                <h2 id="popup-title">Birthday Wish</h2>
+                <div class="wish-number" id="wish-number">Wish 1 of 24</div>
+            </div>
+            <div class="popup-body">
+                <div class="wish-text" id="popup-wish-text">
+                    Loading wish...
+                </div>
+            </div>
+            <div class="popup-footer">
+                <button class="popup-btn share-popup-btn" id="share-popup-btn">
+                    <i class="fas fa-share-alt"></i> Share This Wish
+                </button>
+                <button class="popup-btn next-popup-btn" id="next-popup-btn">
+                    <i class="fas fa-arrow-right"></i> Next Wish
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
