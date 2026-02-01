@@ -730,15 +730,17 @@ body {
 }
 
 #popup-wish-text {
-    font-size: 1.4rem; /* Smaller font for longer text */
-    line-height: 1.8;
+    font-size: 1rem; /* Even smaller */
+    line-height: 1.6; /* Tighter line spacing */
     color: var(--dark-color);
-    text-align: center;
+    text-align: left;
     animation: fadeInUp 0.5s ease;
-    max-height: 400px;
+    max-height: 380px;
     overflow-y: auto;
-    padding: 10px 20px;
-    white-space: pre-line; /* This will show \n as line breaks */
+    padding: 15px 25px;
+    white-space: pre-line;
+    text-align: justify;
+    font-weight: 400;
 }
 
 .popup-footer {
@@ -965,8 +967,20 @@ body {
         font-size: 1.8rem;
     }
     
-    #popup-wish-text {
+    /* #popup-wish-text {
         font-size: 1.4rem;
+    } */
+
+    #popup-wish-text {
+        font-size: 0.95rem; /* Slightly smaller on mobile */
+        line-height: 1.6;
+        padding: 10px 15px;
+    }
+
+    .popup-body {
+        min-height: 200px;
+        max-height: 350px;
+        padding: 10px 0;
     }
     
     .popup-footer {
@@ -1022,7 +1036,7 @@ body {
     }
     
     #popup-wish-text {
-        font-size: 1.2rem;
+        font-size: 0.95rem;
     }
     
     .popup-body {
